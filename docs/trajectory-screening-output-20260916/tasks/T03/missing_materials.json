@@ -1,0 +1,14 @@
+{
+  "safe_task_id": "T03",
+  "missing": [
+    {
+      "item": "最终状态与验收结果",
+      "reason": "会话在扫描时仍在进行，无 task_complete"
+    },
+    {
+      "item": "最终产出文件集合",
+      "reason": "tasks/ 与 packages/ 内容在会话结束时才确定"
+    }
+  ],
+  "notes": "会话进行中，不能生成可提交 ZIP；需会话结束后重新采集。其审批守卫子代理记录见 package/tasks/T12 对应索引条目。"
+}

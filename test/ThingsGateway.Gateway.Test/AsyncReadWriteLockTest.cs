@@ -2,6 +2,7 @@
 using ThingsGateway.Foundation.Common.PooledAwait;
 using ThingsGateway.Gateway.Application;
 using TouchSocket.Core;
+using System.Reflection;
 namespace ThingsGateway.Gateway.Test
 {
     using Xunit;
@@ -102,6 +103,80 @@ namespace ThingsGateway.Gateway.Test
             Assert.True(rwLock1.ReadWaited);
         }
 
+        [Fact]
+        public async Task Writer_Should_Wait_For_Reader_Lease_Without_Cancelling_Caller_Token()
+        {
+            using var rwLock = new AsyncReadWriteLock(writeReadRatio: 3, writePriority: true);
+            using var cts = new CancellationTokenSource();
+            var readerLease = AcquireReaderLease(rwLock, cts.Token);
+
+            var leaseDisposed = false;
+            var writerEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writerTask = Task.Run(async () =>
+            {
+                using (await rwLock.WriterLockAsync().ConfigureAwait(false))
+                {
+                    writerEntered.TrySetResult(true);
+                }
+            });
+
+            try
+            {
+                for (var i = 0; i < 100 && !IsPreemptionRequested(readerLease); i++)
+                {
+                    await Task.Delay(10);
+                }
+
+                Assert.True(rwLock.WriteWaited);
+                Assert.True(IsPreemptionRequested(readerLease));
+                Assert.False(cts.IsCancellationRequested);
+                Assert.False(writerEntered.Task.IsCompleted);
+
+                leaseDisposed = true;
+                DisposeReaderLease(readerLease);
+
+                await writerEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                await writerTask.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+            finally
+            {
+                if (!leaseDisposed)
+                {
+                    DisposeReaderLease(readerLease);
+                }
+            }
+        }
+
+        private static object AcquireReaderLease(AsyncReadWriteLock rwLock, CancellationToken cancellationToken)
+        {
+            var method = typeof(AsyncReadWriteLock).GetMethod(
+                "ReaderLeaseLockAsync",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(method);
+
+            var valueTask = method.Invoke(rwLock, new object[] { cancellationToken });
+            Assert.NotNull(valueTask);
+
+            var awaiter = valueTask.GetType().GetMethod("GetAwaiter")?.Invoke(valueTask, null);
+            Assert.NotNull(awaiter);
+
+            var result = awaiter.GetType().GetMethod("GetResult")?.Invoke(awaiter, null);
+            Assert.NotNull(result);
+            return result;
+        }
+
+        private static bool IsPreemptionRequested(object readerLease)
+        {
+            var value = readerLease.GetType()
+                .GetProperty("IsPreemptionRequested")
+                ?.GetValue(readerLease);
+            return value is true;
+        }
+
+        private static void DisposeReaderLease(object readerLease)
+        {
+            readerLease.GetType().GetMethod("Dispose")?.Invoke(readerLease, null);
+        }
     }
 }
 

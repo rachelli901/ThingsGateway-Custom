@@ -1,0 +1,3 @@
+path,role,state_at_scan,note
+%USERPROFILE%/.codex/sessions,扫描输入根（只读）,存在,本 Prompt 授权的会话子目录
+输出目录（本次产出）,产出目标,存在,task_index / screening_report / duplicate_groups / packages / tasks
