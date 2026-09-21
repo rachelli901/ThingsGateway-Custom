@@ -1,9 +1,0 @@
-path,role,state_at_scan,note
-src/ThingsGateway.Gateway.Application/Common/AsyncReadWriteLock.cs,修改（生产实现）,存在,写者优先/读者取消的核心实现
-src/ThingsGateway.Gateway.Application/Common/AsyncAutoResetEvent.cs,读取（依赖）,存在,等待/唤醒原语，SetAll 丢失唤醒
-src/ThingsGateway.Gateway.Application/Driver/Collect/CollectBase.cs,修改（调用点）,存在,ReadVariableSource 改用 Lease 通道
-src/ThingsGateway.Gateway.Application/Driver/Collect/CollectFoundationBase.cs,读取,存在,调用链核对
-src/ThingsGateway.Gateway.Application/Driver/Collect/CollectPropertyBase.cs,读取,存在,调用链核对
-test/ThingsGateway.Gateway.Test/AsyncReadWriteLockTest.cs,修改（回归测试）,存在,Lease 语义回归测试
-src/ThingsGateway.Gateway.Application/ThingsGateway.Gateway.Application.csproj,读取,存在,强命名 / InternalsVisibleTo 配置排查
-PackNuget.props,读取,存在,程序集签名配置排查

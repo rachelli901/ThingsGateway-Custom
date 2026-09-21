@@ -1,5 +1,0 @@
-{
-  "safe_task_id": "T01",
-  "missing": [],
-  "notes": "未发现缺失的必要材料；对话未使用附件（无 attachments/）。工作区三个改动文件在扫描时就位，HEAD 与 session_meta.git.commit_hash 一致。"
-}
